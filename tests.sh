@@ -1,4 +1,4 @@
-
+#!/usr/bin/env bash
 #set -x
 function clean_up {
    if [ -d btrfs-diff-tests ] ; then
@@ -37,4 +37,3 @@ dir=$(pwd)
 sudo $dir/btrfs-snapshots-diff.py -p btrfs-diff-tests.parent -c btrfs-diff-tests.child
 
 clean_up
-
