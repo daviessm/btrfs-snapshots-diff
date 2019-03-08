@@ -140,7 +140,11 @@ class BtrfsStream(object):
         if self.send_attrs[attr] != attr_type:
             raise ValueError('Unexpected attribute %s' % self.send_attrs[attr])
         ret = unpack('<' + 'B' * self.BTRFS_UUID_SIZE,
-                     self.stream[index + self.l_tlv:index + self.l_tlv + l_attr])
+                     self.stream[index
+                                 + self.l_tlv:index
+                                 + self.l_tlv + l_attr
+                                 ]
+                     )
         return index + self.l_tlv + l_attr, ''.join(['%02x' % x for x in ret])
 
     def _tlv_get_timespec(self, attr_type, index):
@@ -203,9 +207,12 @@ class BtrfsStream(object):
             elif command == 'BTRFS_SEND_C_UTIMES':
                 idx2, path = self._tlv_get_string(
                     'BTRFS_SEND_A_PATH', idx + self.l_head)
-                idx2, atime = self._tlv_get_timespec('BTRFS_SEND_A_ATIME', idx2)
-                idx2, mtime = self._tlv_get_timespec('BTRFS_SEND_A_MTIME', idx2)
-                idx2, ctime = self._tlv_get_timespec('BTRFS_SEND_A_CTIME', idx2)
+                idx2, atime = self._tlv_get_timespec('BTRFS_SEND_A_ATIME',
+                                                     idx2)
+                idx2, mtime = self._tlv_get_timespec('BTRFS_SEND_A_MTIME',
+                                                     idx2)
+                idx2, ctime = self._tlv_get_timespec('BTRFS_SEND_A_CTIME',
+                                                     idx2)
                 modified.setdefault(path, []).append(
                     (command[13:].lower(), count))
                 commands.append((command[13:].lower(), atime, mtime, ctime))
@@ -339,7 +346,9 @@ class BtrfsStream(object):
                 commands.append((command[13:].lower(), file_offset, size))
 
             elif command == 'BTRFS_SEND_C_END':
-                commands.append((command[13:].lower(), idx + self.l_head, len(self.stream)))
+                commands.append((command[13:].lower(),
+                                 idx + self.l_head, len(self.stream))
+                                )
                 break
 
             elif command == 'BTRFS_SEND_C_UNSPEC':
@@ -398,8 +407,8 @@ if __name__ == "__main__":
 
     stream = BtrfsStream(stream_file)
     if stream.version is None:
-       exit(1)
-    print('Found a valid Btrfs stream header, version %d' % stream.version)
+        exit(1)
+    print(f'Found a valid Btrfs stream header, version {stream.version}')
     modified, commands = stream.decode()
 
     # Temporary files / dirs / links... created by btrfs send: they are later
@@ -437,13 +446,13 @@ if __name__ == "__main__":
 
             if a[0] == 'renamed_from':
                 if args.filter and re_tmp.match(cmd[1]):
-                    if prev_action=='unlink':
+                    if prev_action == 'unlink':
                         del(print_actions[-1])
                         print_actions.append('rewritten')
                     else:
                         print_actions.append('created')
                 else:
-                    print_actions.append('renamed from "%s"' % cmd[1])
+                    print_actions.append(f'renamed from {cmd[1]}')
 
             elif a[0] == 'set_xattr':
                 print_actions.append('xattr %s %d' % cmd[1:])
@@ -473,9 +482,9 @@ if __name__ == "__main__":
                 print_actions.append('rename to "%s"' % cmd[2])
 
             elif a[0] == 'utimes':
-                if args.filter and prev_action=='utimes':
-                   # Print only last utimes
-                   del(print_actions[-1])
+                if args.filter and prev_action == 'utimes':
+                    # Print only last utimes
+                    del(print_actions[-1])
                 print_actions.append('times a=%s m=%s c=%s' % (
                     time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(cmd[1])),
                     time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(cmd[2])),
