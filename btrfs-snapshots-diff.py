@@ -1,5 +1,4 @@
-#! /usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python3
 
 """
 Displays differences in 2 Btrfs snapshots (from the same subvolume obviously).
