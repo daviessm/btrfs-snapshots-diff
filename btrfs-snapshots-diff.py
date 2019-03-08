@@ -373,7 +373,7 @@ if __name__ == "__main__":
     stream = BtrfsStream(stream_file)
     if stream.version is None:
        exit(1)
-    print 'Found a valid Btrfs stream header, version %d' % stream.version
+    print('Found a valid Btrfs stream header, version %d' % stream.version)
     modified, commands = stream.decode()
 
     # Temporary files / dirs / links... created by btrfs send: they are later
@@ -382,7 +382,7 @@ if __name__ == "__main__":
         import re
         re_tmp = re.compile(r'o\d+-\d+-0$')
 
-    for path, actions in modified.iteritems():
+    for path, actions in modified.items():
 
         if args.filter and re_tmp.match(path):
             # Don't display files created temporarily and later renamed
@@ -390,7 +390,7 @@ if __name__ == "__main__":
                     actions[1][0] == 'rename') and \
                     not (actions[0][0] == ('renamed_from') and \
                     actions[1][0] == 'rmdir'):
-                print path, '\n\t', actions, '=' * 20
+                print(path, '\n\t', actions, '=' * 20)
             continue
 
         if path == '':
@@ -469,8 +469,8 @@ if __name__ == "__main__":
             prev_action = a[0]
 
         if args.csv:
-            print '%s;%s' % (path, ';'.join(print_actions))
+            print('%s;%s' % (path, ';'.join(print_actions)))
         else:
-            print '\n%s' % path
+            print('\n%s' % path)
             for p in print_actions:
-               print '\t%s' % p
+               print('\t%s' % p)
