@@ -90,24 +90,24 @@ class BtrfsStream(object):
             self.stream = f_stream.read()
             f_stream.close()
 
-        except:
-            printerr('Error reading stream\n')
+        except IOError:
+            print('Error reading stream', file=sys.stderr)
             exit(1)
 
         if delete:
             try:
                 unlink(stream_file)
-            except:
-                printerr('Warning: could not delete stream file "%s"\n' %
-                         stream_file)
+            except OSError:
+                print(f'Warning: could not delete stream file {stream_file}',
+                      file=sys.stderr)
 
         if len(self.stream) < 17:
-            printerr('Invalide stream length\n')
+            print('Invalide stream length', file=sys.stderr)
             self.version = None
 
         magic, null, self.version = unpack('<12scI', self.stream[0:17])
         if magic != 'btrfs-stream':
-            printerr('Not a Btrfs stream!\n')
+            print('Not a Btrfs stream!', file=sys.stderr)
             self.version = None
 
     def tlv_get(self, attr_type, index):
@@ -380,12 +380,12 @@ if __name__ == "__main__":
                 subprocess.check_call(cmd)
 
             except:
-                printerr('Error: %s\nexecuting "%s"\n' %
-                         (exc_info()[0], ' '.join(cmd)))
+                print(f'Error: {exc_info()[0]}executing {' '.join(cmd)}\n',
+                      file=sys.stderr)
                 exit(1)
             stream_file = '/tmp/snaps-diff'
         else:
-            printerr('Error: parent needs child!\n')
+            printerr('Error: parent needs child!', file=sys.stderr)
             parser.print_help()
             exit(1)
 
