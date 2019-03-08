@@ -32,14 +32,13 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from struct import unpack
-from sys import argv, exit, stdin, stderr, exc_info
-printerr = stderr.write
 import argparse
 import subprocess
 import time
 from collections import OrderedDict
 from os import unlink
+from struct import unpack
+from sys import argv, exc_info, exit, stderr, stdin
 
 
 class BtrfsStream(object):
