@@ -84,8 +84,7 @@ class BtrfsStream(object):
     l_tlv = 4
 
     def __init__(self, stream_file, delete=False):
-
-        # Read send stream
+        """Initialize BtrfsStream class instance."""
         try:
             f_stream = open(stream_file)
             self.stream = f_stream.read()
@@ -153,7 +152,7 @@ class BtrfsStream(object):
         return index + self.l_tlv + l_attr, float(s) + ns * 1e-9
 
     def decode(self):
-        # Decode commands + attributes
+        """Decode commands + attributes."""
         idx = 17
         count = 0
         # List of commands
