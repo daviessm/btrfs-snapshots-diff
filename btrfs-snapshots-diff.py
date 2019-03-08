@@ -166,11 +166,18 @@ class BtrfsStream(object):
 
         while True:
 
+            # unpack takes in format string and a buffer and returns tuple.
+            # Format string '<IHI' translates as:
+            # '<' = little endian
+            # 'I' = unsigned int
+            # 'H' = U=unsigned short
+            # 'I' = unsigned int
+            # both 'H' and 'I' translate to integers in python types
             l_cmd, cmd, crc = unpack(
                 '<IHI', self.stream[idx:idx + self.l_head])
             try:
                 command = self.send_cmds[cmd]
-            except:
+            except IndexError:
                 raise ValueError('Unkown command %d' % cmd)
 
             if command == 'BTRFS_SEND_C_RENAME':
