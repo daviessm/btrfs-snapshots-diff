@@ -119,7 +119,7 @@ class BtrfsStream(object):
             print('Not a Btrfs stream!', file=sys.stderr)
             self.version = None
 
-    def tlv_get(self, attr_type, index):
+    def _tlv_get(self, attr_type, index):
         attr, l_attr = unpack('<HH', self.stream[index:index + self.l_tlv])
         if self.send_attrs[attr] != attr_type:
             raise ValueError('Unexpected attribute %s' % self.send_attrs[attr])
@@ -293,7 +293,7 @@ class BtrfsStream(object):
                     'BTRFS_SEND_A_PATH', idx + self.l_head)
                 idx2, xattr_name = self._tlv_get_string(
                     'BTRFS_SEND_A_XATTR_NAME', idx2)
-                idx2, xattr_data = self.tlv_get(
+                idx2, xattr_data = self._tlv_get(
                     'BTRFS_SEND_A_XATTR_DATA', idx2)
                 modified.setdefault(path, []).append(
                     (command[13:].lower(), count))
@@ -313,7 +313,7 @@ class BtrfsStream(object):
                     'BTRFS_SEND_A_PATH', idx + self.l_head)
                 idx2, file_offset = self._tlv_get_u64(
                     'BTRFS_SEND_A_FILE_OFFSET', idx2)
-                idx2, data = self.tlv_get(
+                idx2, data = self._tlv_get(
                     'BTRFS_SEND_A_DATA', idx2)
                 modified.setdefault(path, []).append(
                     (command[13:].lower(), count))
