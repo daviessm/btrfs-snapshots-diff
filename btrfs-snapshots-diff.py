@@ -187,7 +187,13 @@ class BtrfsStream(object):
             try:
                 command = self.send_cmds[cmd]
             except IndexError:
-                raise ValueError('Unkown command %d' % cmd)
+                raise ValueError(f'Unknown command {cmd}')
+
+            # modifed.setdefault(key, default) checks to see if key is in
+            # dictionary. If it exists, it returns the value for key, otherwise
+            # it inserts key into dict with value of default and returns
+            # default.
+            # .append works on the list returned by setdefault.
 
             if command == 'BTRFS_SEND_C_RENAME':
                 idx2, path = self._tlv_get_string(
@@ -372,7 +378,7 @@ class BtrfsStream(object):
 
             else:
                 # Shoud not happen
-                raise ValueError('Unexpected command %s' % command)
+                raise ValueError(f'Unexpected command {command}')
 
             idx += self.l_head + l_cmd
             count += 1
@@ -464,9 +470,9 @@ if __name__ == "__main__":
             cmd = commands[a[1]]
 
             if prev_action == 'update_extent' and a[0] != 'update_extent':
-                print_actions.append('update extents %d -> %d' % (
-                    extents[0][0],
-                    extents[-1][0] + extents[-1][1]))
+                print_actions.append(f'update extents {extents[0][0]} -> '
+                                     f'{extents[-1][0] + extents[-1][1]}'
+                                     )
 
             if a[0] == 'renamed_from':
                 if args.filter and re_tmp.match(cmd[1]):
@@ -479,31 +485,31 @@ if __name__ == "__main__":
                     print_actions.append(f'renamed from {cmd[1]}')
 
             elif a[0] == 'set_xattr':
-                print_actions.append('xattr %s %d' % cmd[1:])
+                print_actions.append(f'xattr {cmd[1]} {cmd[2]}')
 
             elif a[0] == 'update_extent':
                 extents .append(cmd[1:])
 
             elif a[0] == 'truncate':
-                print_actions.append('truncate %d' % cmd[1])
+                print_actions.append(f'truncate {cmd[1]}')
 
             elif a[0] == 'chown':
-                print_actions.append('owner %d:%d' % cmd[1:])
+                print_actions.append(f'owner {cmd[1]}:{cmd[2]}')
 
             elif a[0] == 'chmod':
-                print_actions.append('mode %o' % cmd[1])
+                print_actions.append(f'mode {cmd[1]}')
 
             elif a[0] == 'link':
-                print_actions.append('link to "%s"' % cmd[1])
+                print_actions.append(f'link to "{cmd[1]}"')
 
             elif a[0] == 'symlink':
-                print_actions.append('symlink to "%s"' % cmd[1])
+                print_actions.append(f'symlink to "{cmd[1]}"')
 
             elif a[0] in ('unlink', 'mkfile', 'mkdir', 'mkfifo'):
-                print_actions.append('%s' % a[0])
+                print_actions.append(f'{a[0]}')
 
             elif a[0] == 'rename':
-                print_actions.append('rename to "%s"' % cmd[2])
+                print_actions.append(f'rename to "{cmd[2]}"')
 
             elif a[0] == 'utimes':
                 if args.filter and prev_action == 'utimes':
@@ -516,21 +522,23 @@ if __name__ == "__main__":
                 ))
 
             elif a[0] == 'snapshot':
-                print_actions.append(
-                    'snapshot: uuid=%s, ctrasid=%d, clone_uuid=%s, clone_ctransid=%d' % cmd[1:])
+                print_actions.append(f'snapshot: uuid={cmd[1]},'
+                                     f' ctrasid={cmd[2]}, clone_uuid={cmd[3]},'
+                                     f' clone_ctransid={cmd[4]}')
 
             elif a[0] == 'write':
                 # XXX cmd[2] is data, but what does it represent?
-                print_actions.append('write: from %d' % cmd[1])
+                print_actions.append('write: from cmd[1]')
 
             else:
-                print_actions.append('%s, %s %s' % (a, cmd, '-' * 20))
+                print_actions.append(f'{a}, {cmd} {"-" * 20}')
             prev_action = a[0]
 
         if args.csv:
-            print('%s;%s' % (path, ';'.join(print_actions)))
+            print(f'{path};{";".join(print_actions)}')
         else:
-            print('\n%s' % path)
+            print(f'\n{path}')
             for p in print_actions:
-               print('\t%s' % p)
+                print(f'\t{p}')
+
 logging.shutdown()
