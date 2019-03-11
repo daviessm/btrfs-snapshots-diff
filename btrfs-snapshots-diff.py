@@ -35,10 +35,14 @@ SOFTWARE.
 import argparse
 import subprocess
 import time
+import logging
 from collections import OrderedDict
 from os import unlink
 from struct import unpack
-from sys import argv, exc_info, exit, stderr, stdin
+from sys import exc_info, exit, stderr
+
+# Setup module based logging, attaches to logger from parent module
+logger = logging.getLogger(__name__)
 
 
 class BtrfsStream(object):
@@ -388,25 +392,30 @@ if __name__ == "__main__":
 #                        help="increase verbosity")
     args = parser.parse_args()
 
-    if args.parent is not None:
-        if args.child is not None:
+    logging.basicConfig(stream=stderr)  # print logging info to stderr
+
+    if args.parent is not None:  # --parent
+        if args.child is not None:  # --child
             cmd = ['btrfs', 'send', '-p', args.parent, '--no-data',
                    '-f', '/tmp/snaps-diff', args.child]
-            try:
-                subprocess.check_call(cmd)
-
-            except:
-                print(f'Error: {exc_info()[0]}executing {' '.join(cmd)}\n',
-                      file=sys.stderr)
+            return_val = subprocess.run(cmd, stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.PIPE)
+            if return_val.returncode != 0:
+                logging.error(f'{exc_info()[0]} triggered while executing '
+                              f'{cmd}')
+                logging.error(return_val.stderr)
+                logging.shutdown()
                 exit(1)
             stream_file = '/tmp/snaps-diff'
         else:
-            printerr('Error: parent needs child!', file=sys.stderr)
+            logging.error('Parent needs child!')
             parser.print_help()
+            logging.shutdown()
             exit(1)
 
     elif args.file is None:
         parser.print_help()
+        logging.shutdown()
         exit(1)
 
     else:
@@ -414,8 +423,11 @@ if __name__ == "__main__":
 
     stream = BtrfsStream(stream_file)
     if stream.version is None:
+        logging.error('Unable to detect btrfs_send stream version')
+        logging.shutdown()
         exit(1)
-    print(f'Found a valid Btrfs stream header, version {stream.version}')
+    logging.info(f'Found a valid Btrfs stream header, version '
+                 f'{stream.version}')
     modified, commands = stream.decode()
 
     # Temporary files / dirs / links... created by btrfs send: they are later
@@ -516,3 +528,4 @@ if __name__ == "__main__":
             print('\n%s' % path)
             for p in print_actions:
                print('\t%s' % p)
+logging.shutdown()
