@@ -520,6 +520,7 @@ if __name__ == "__main__":
                 if args.filter and prev_action == 'utimes':
                     # Print only last utimes
                     del(print_actions[-1])
+                # cmd[1], cmd[2], cmd[3] are seconds since the epoch
                 print_actions.append('times a=%s m=%s c=%s' % (
                     time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(cmd[1])),
                     time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(cmd[2])),
