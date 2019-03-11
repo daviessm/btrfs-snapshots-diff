@@ -453,10 +453,12 @@ if __name__ == "__main__":
 
         if args.filter and re_tmp.match(path):
             # Don't display files created temporarily and later renamed
-            if not (actions[0][0] in ('mkfile', 'mkdir', 'symlink') and \
-                    actions[1][0] == 'rename') and \
-                    not (actions[0][0] == ('renamed_from') and \
-                    actions[1][0] == 'rmdir'):
+            if (not (actions[0][0] in ('mkfile', 'mkdir', 'symlink')
+                     and actions[1][0] == 'rename'
+                     )
+                and not (actions[0][0] == ('renamed_from')
+                         and actions[1][0] == 'rmdir'
+                         )):
                 print(path, '\n\t', actions, '=' * 20)
             continue
 
