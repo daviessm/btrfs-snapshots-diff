@@ -80,6 +80,11 @@ class BtrfsStream(object):
                   'BTRFS_SEND_A_CLONE_CTRANSID', 'BTRFS_SEND_A_CLONE_PATH',
                   'BTRFS_SEND_A_CLONE_OFFSET', 'BTRFS_SEND_A_CLONE_LEN'
                   ]
+
+    mk_rm_cmds = ['BTRFS_SEND_C_MKFILE', 'BTRFS_SEND_C_MKDIR',
+                  'BTRFS_SEND_C_MKFIFO', 'BTRFS_SEND_C_MKSOCK',
+                  'BTRFS_SEND_C_UNLINK', 'BTRFS_SEND_C_RMDIR'
+                  ]
     # From btrfs/ioctl.h:#define BTRFS_UUID_SIZE 16
     BTRFS_UUID_SIZE = 16
 
@@ -228,7 +233,7 @@ class BtrfsStream(object):
                     (command[13:].lower(), count))
                 commands.append((command[13:].lower(), atime, mtime, ctime))
 
-            elif command in 'BTRFS_SEND_C_MKFILE BTRFS_SEND_C_MKDIR BTRFS_SEND_C_MKFIFO BTRFS_SEND_C_MKSOCK BTRFS_SEND_C_UNLINK BTRFS_SEND_C_RMDIR '.split():
+            elif command in self.mk_rm_cmds:
                 idx2, path = self._tlv_get_string(
                     'BTRFS_SEND_A_PATH', idx + self.l_head)
                 modified.setdefault(path, []).append(
