@@ -389,14 +389,16 @@ class BtrfsStream(object):
 if __name__ == "__main__":
     # Parse command line arguments
     parser = argparse.ArgumentParser(
-                    description="Display differences between 2 Btrfs snapshots")
+                description="Display differences between 2 Btrfs snapshots")
     parser.add_argument('-p', '--parent',
                         help='parent snapshot (must exists and be readonly)')
     parser.add_argument('-c', '--child',
-                        help='child snapshot (will be created if it does not exist)')
+                        help='child snapshot (will be created if it does not \
+                        exist)')
     parser.add_argument('-f', '--file', help="diff file")
     parser.add_argument('-t', '--filter', action='store_true',
-                        help='does not display temporary files, nor all time modifications (just latest)')
+                        help='does not display temporary files, nor all time \
+                        modifications (just latest)')
     parser.add_argument('-s', '--csv', action='store_true',
                         help='CSV output')
 #    parser.add_argument('-v', '--verbose', action="count", default=0,
