@@ -331,8 +331,9 @@ class BtrfsStream(object):
                     'BTRFS_SEND_A_CLONE_UUID', idx2)
                 idx2, clone_transid = self._tlv_get_u64(
                     'BTRFS_SEND_A_CLONE_TRANSID', idx2)
+                # BTRFS_SEND_A_CLONE8PATH
                 idx2, clone_path = self._tlv_get_string(
-                    'BTRFS_SEND_A_CLONE_PATH', idx + self.l_head)  # BTRFS_SEND_A_CLONE8PATH
+                    'BTRFS_SEND_A_CLONE_PATH', idx + self.l_head)
                 idx2, clone_offset = self._tlv_get_u64(
                     'BTRFS_SEND_A_CLONE_OFFSET', idx2)
                 modified.setdefault(path, []).append(
