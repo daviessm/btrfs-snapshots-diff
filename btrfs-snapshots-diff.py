@@ -100,23 +100,24 @@ class BtrfsStream(object):
             f_stream.close()
 
         except IOError:
-            print('Error reading stream', file=sys.stderr)
+            logger.error('Error reading stream')
             exit(1)
 
         if delete:
             try:
                 unlink(stream_file)
             except OSError:
-                print(f'Warning: could not delete stream file {stream_file}',
-                      file=sys.stderr)
+                logger.error(f'Warning: could not delete stream '
+                             f'file {stream_file}',
+                             )
 
         if len(self.stream) < 17:
-            print('Invalide stream length', file=sys.stderr)
+            logger.error('Invalide stream length')
             self.version = None
 
         magic, null, self.version = unpack('<12scI', self.stream[0:17])
         if magic != 'btrfs-stream':
-            print('Not a Btrfs stream!', file=sys.stderr)
+            logger.error('Not a Btrfs stream!')
             self.version = None
 
     def _tlv_get(self, attr_type, index):
