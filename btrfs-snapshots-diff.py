@@ -45,7 +45,7 @@ from sys import exc_info, exit, stderr
 logger = logging.getLogger(__name__)
 
 
-class BtrfsStream(object):
+class BtrfsStream():
     """
     Represents a filestream produced by btrfs-send.
 
