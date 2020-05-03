@@ -95,7 +95,7 @@ class BtrfsStream():
     def __init__(self, stream_file, delete=False):
         """Initialize BtrfsStream class instance."""
         try:
-            f_stream = open(stream_file)
+            f_stream = open(stream_file,'rb')
             self.stream = f_stream.read()
             f_stream.close()
 
@@ -116,7 +116,7 @@ class BtrfsStream():
             self.version = None
 
         magic, null, self.version = unpack('<12scI', self.stream[0:17])
-        if magic != 'btrfs-stream':
+        if magic != b'btrfs-stream':
             logger.error('Not a Btrfs stream!')
             self.version = None
 
