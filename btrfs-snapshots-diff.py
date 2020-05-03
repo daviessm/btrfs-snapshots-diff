@@ -134,7 +134,7 @@ class BtrfsStream():
             raise ValueError('Unexpected attribute %s' % self.send_attrs[attr])
         ret, = unpack('<%ds' % l_attr, self.stream[
                       index + self.l_tlv:index + self.l_tlv + l_attr])
-        return index + self.l_tlv + l_attr, ret
+        return index + self.l_tlv + l_attr, str(ret, 'utf-8')
 
     def _tlv_get_u64(self, attr_type, index):
         attr, l_attr = unpack('<HH', self.stream[index:index + self.l_tlv])
@@ -448,7 +448,6 @@ if __name__ == "__main__":
 
     for path, actions in modified.items():
 
-        path = str(path, 'utf-8')
         if args.filter and re_tmp.match(path):
             # Don't display files created temporarily and later renamed
             if (not (actions[0][0] in ('mkfile', 'mkdir', 'symlink')
