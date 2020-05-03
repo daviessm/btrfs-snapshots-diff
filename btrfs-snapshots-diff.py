@@ -229,7 +229,6 @@ class BtrfsStream():
             elif command in 'BTRFS_SEND_C_MKFILE BTRFS_SEND_C_MKDIR BTRFS_SEND_C_UNLINK BTRFS_SEND_C_RMDIR'.split():
                 idx2, path = self._tlv_get_string(
                     'BTRFS_SEND_A_PATH', idx + self.l_head)
-                idx2, ino = self._tlv_get_u64('BTRFS_SEND_A_INO', idx2)
                 modified.setdefault(path, []).append(
                     (command[13:].lower(), count))
                 commands.append((command[13:].lower()))
