@@ -448,6 +448,7 @@ if __name__ == "__main__":
 
     for path, actions in modified.items():
 
+        path = str(path, 'utf-8')
         if args.filter and re_tmp.match(path):
             # Don't display files created temporarily and later renamed
             if (not (actions[0][0] in ('mkfile', 'mkdir', 'symlink')
