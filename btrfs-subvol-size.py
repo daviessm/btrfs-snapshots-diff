@@ -63,7 +63,7 @@ def inspect_from(fs):
   for path, size in sorted_sizes:
     total_size += size
     if size > 256*1024: #Ignore files less than 256k
-      print(str(size) + " " + path)
+      print(str(total_size/1024/1024) + " " + "{:.1f}".format(size/1024/1024) + " " + path)
 
   print("Total size of exclusive extents: " + str(total_size))
 
