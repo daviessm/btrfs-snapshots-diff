@@ -1,36 +1,36 @@
 #!/usr/bin/env python3
 import btrfs, os, sys
 
-def file_backrefs(fs, inum, this_subvol_id):
-  exclusive_backrefs = []
+def file_sizes(fs, inum, this_subvol_id):
+  freeable_size = 0
 
   min_key = btrfs.ctree.Key(inum, 0, 0)
   max_key = btrfs.ctree.Key(inum, -1, -1)
   # The special tree value of 0 will cause a search in the subvolume tree
   # that the inode which was used to open the file system object is part of.
   for header, data in btrfs.ioctl.search_v2(fs.fd, 0, min_key, max_key):
+  #for header, data in btrfs.ioctl.search_v2(fs.fd, 0):
     item = btrfs.ctree.classify(header, data)
+    #print("item " + str(type(item)) + " " + str(item))
 
     #Work on the file extent items (there could be more than one for a file)
-    if isinstance(item, btrfs.ctree.FileExtentItem) and item.type == btrfs.ctree.FILE_EXTENT_REG:
-      key = btrfs.ctree.Key(item.disk_bytenr, btrfs.ctree.EXTENT_ITEM_KEY, item.disk_num_bytes)
+    if isinstance(item, btrfs.ctree.FileExtentItem) and item.type == btrfs.ctree.FILE_EXTENT_REG and item.disk_num_bytes > 0:
+      inodes, bytes_missed = btrfs.ioctl.logical_to_ino_v2(fs.fd, item.disk_bytenr, ignore_offset=True)
+      if bytes_missed > 0:
+        inodes, bytes_missed = btrfs.ioctl.logical_to_ino_v2(fs.fd, item.disk_bytenr, bufsize=65536+bytes_missed, ignore_offset=True)
 
-      #Find its extent data items (there should just be one per file extent item)
-      for header, data in btrfs.ioctl.search_v2(fs.fd, btrfs.ctree.EXTENT_TREE_OBJECTID, key, key + 1):
-        extent_data_ref = btrfs.ctree.classify(header, data)
+      shared = False
+      for inode in inodes:
+        #print(str(item.disk_num_bytes) + " root " + str(inode.root))
+        if inode.root != this_subvol_id:
+          shared = True
+          break
 
-        #Get the list of extent data backrefs - file extent items that point at this extent
-        is_referenced_elsewhere = False
-        for backref in extent_data_ref.extent_data_refs:
-          if backref.root != this_subvol_id:
-            is_referenced_elsewhere = True
-            break
+      if not shared:
+        freeable_size += item.disk_num_bytes
+  return freeable_size
 
-        if not is_referenced_elsewhere:
-          exclusive_backrefs.append(extent_data_ref)
-  return exclusive_backrefs
-
-def inspect_from(fs, root):
+def inspect_from(fs):
   inum = os.fstat(fs.fd).st_ino
   min_key = btrfs.ctree.Key(inum, 0, 0)
   max_key = btrfs.ctree.Key(inum, -1, -1)
@@ -47,34 +47,29 @@ def inspect_from(fs, root):
       print("Working on subvolume " + str(this_subvol_id))
 
   inodes = {}
-  for dirname, subdirlist, filelist in os.walk(root):
+  for dirname, subdirlist, filelist in os.walk(fs.path):
     for file in os.scandir(dirname):
       inodes[file.path] = file.inode()
 
-  results = {}
-  for path, inode in inodes.items():
-    backrefs = file_backrefs(fs, inode, this_subvol_id)
-    if backrefs:
-      results[path] = backrefs
-
   sizes = {}
-  for path, backrefs in results.items():
-    size_mb = 0
-    for backref in backrefs:
-      size_mb = size_mb + (backref.length / 1024 / 1024)
-    sizes[path] = size_mb
+  for path, inode in inodes.items():
+    size = file_sizes(fs, inode, this_subvol_id)
+    #print(path + " " + str(size))
+    if size:
+      sizes[path] = size
 
   total_size = 0
   sorted_sizes = sorted(sizes.items(), key=lambda x: x[1], reverse = True)
   for path, size in sorted_sizes:
     total_size += size
-    print(str(size) + " " + path)
+    if size > 256*1024: #Ignore files less than 256k
+      print(str(size) + " " + path)
 
   print("Total size of exclusive extents: " + str(total_size))
 
 def main():
   with btrfs.FileSystem(sys.argv[1]) as fs:
-    results = inspect_from(fs, sys.argv[1])
+    results = inspect_from(fs)
 
 if __name__ == '__main__':
   main()
